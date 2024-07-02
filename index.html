@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hành Trình Anh Ba Sỉn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            background: url('https://yt3.googleusercontent.com/QOKakC8vH3doMUGg4c9yXJK-Ka-i3BKawvmj4egaC1_J6yjmNGIreqoafz50A_nSa18Joamx=s900-c-k-c0x00ffffff-no-rj') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0);
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: #1E90FF;
+            text-shadow: 
+                -1px -1px 0 #fff,  
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
+            line-height: 1.0;
+            white-space: nowrap;
+            width: auto;
+        }
+        #startButton {
+            padding: 20px 25px;
+            font-size: 25px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            align-self: center;
+        }
+        #startButton:hover {
+            background-color: #45a049;
+        }
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+            display: none;
+            position: relative;
+            background: url('https://live3d-global.uncledesk.com/vtuber/ai_product/anime_genius/static/imgs/5608af50711db1dd1ad12fe0ad993e3f.webp') no-repeat center center fixed;
+            background-size: cover;
+        }
+        #player {
+            width: 135px;
+            height: 135px;
+            background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240702_021501180.png?alt=media&token=9ede28e4-c536-46eb-8d0f-dc23ef4c8643');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            z-index: 9999;
+        }
+        #joystick {
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-family: 'Press Start 2P', cursive;
+            color: #333;
+            touch-action: none;
+            user-select: none;
+            z-index: 10000;
+        }
+        #powButton {
+            width: 100px;
+            height: 100px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 50px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: yellow;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 10000;
+            user-select: none;
+        }
+        #powButton:hover {
+            background-color: #0ff0fd;
+        }
+        .bullet {
+            width: 13px;
+            height: 11px;
+            background-color: white;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .hide {
+            display: none;
+        }
+        .enemy {
+            width: 65px;
+            height: 85px;
+            background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240702_223422916.png?alt=media&token=72d5263a-c701-43b7-af5e-5e3f7e6bf47a'); /* Thêm hình ảnh cho kẻ địch */
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+        }
+        .enemy.hit {
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: all 0.5s ease;
+        }
+        #livesContainer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: white;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+    <div class="start-screen">
+        <h1>HÀNH TRÌNH ANH BA SỈN</h1>
+        <button id="startButton" onclick="startGame()">START</button>
+    </div>
+
+    <div id="gameContainer">
+        <div id="player"></div>
+        <div id="joystick">⚪</div>
+        <div id="powButton" onclick="usePow()" class="hide">POW</div>
+        <div id="livesContainer">❤ x <span id="livesCount">5</span></div>
+    </div>
+
+    <audio id="backgroundMusic" loop>
+        <source src="https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/YouCut_20240702_100948379.mp3?alt=media&token=ed807c72-4a5e-427b-a313-8faef75fbdc9" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let player, joystick, powButton;
+        let playerX = 0, playerY = 0;
+        let joystickPressed = false;
+        let lives = 5; // Số mạng sống ban đầu
+        let gameContainer;
+        const enemies = [];
+        let enemyInterval;
+
+        async function lockOrientation() {
+            try {
+                await screen.orientation.lock('portrait');
+            } catch (error) {
+                console.log('Orientation lock failed: ', error);
+            }
+        }
+
+        async function requestFullscreen() {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
+                    await document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                    await document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
+                    await document.documentElement.msRequestFullscreen();
+                }
+            } catch (error) {
+                console.log('Request fullscreen failed: ', error);
+            }
+        }
+
+        function startGame() {
+            requestFullscreen(); // Yêu cầu vào chế độ toàn màn hình
+            const startScreen = document.querySelector('.start-screen');
+            gameContainer = document.getElementById('gameContainer');
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            
+            // Bắt đầu nhạc nền
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            backgroundMusic.play();
+
+            // Lấy các phần tử game
+            player = document.getElementById('player');
+            joystick = document.getElementById('joystick');
+            powButton = document.getElementById('powButton');
+
+            // Thiết lập sự kiện di chuyển joystick
+            joystick.addEventListener('touchstart', joystickTouchStart);
+            joystick.addEventListener('touchmove', joystickTouchMove);
+            joystick.addEventListener('touchend', joystickTouchEnd);
+
+            // Thiết lập sự kiện cho nút POW
+            powButton.addEventListener('click', usePow);
+
+            // Thiết lập vị trí ban đầu của người chơi
+            playerX = window.innerWidth / 2 - player.offsetWidth / 2;
+            playerY = window.innerHeight / 2 - player.offsetHeight / 2;
+            updatePlayerPosition();
+
+            // Tạo kẻ địch ngẫu nhiên
+            enemyInterval = setInterval(createEnemy, 2000); // Tạo kẻ địch mới mỗi 2 giây
+        }
+
+        // Bắt đầu game khi tài liệu được tải hoàn thành
+        document.addEventListener('DOMContentLoaded', () => {
+            lockOrientation();
+        });
+        
+        function joystickTouchStart(event) {
+            event.preventDefault();
+            joystickPressed = true;
+        }
+
+        function joystickTouchMove(event) {
+            event.preventDefault();
+            if (joystickPressed) {
+                const touch = event.targetTouches[0];
+                const joyX = touch.pageX - joystick.offsetLeft - joystick.offsetWidth / 2;
+                const joyY = touch.pageY - joystick.offsetTop - joystick.offsetHeight / 2;
+
+                const maxMove = joystick.offsetWidth / 2;
+                const distance = Math.sqrt(joyX * joyX + joyY * joyY);
+                
+                let moveX, moveY;
+                if (distance < maxMove) {
+                    moveX = joyX;
+                    moveY = joyY;
+                } else {
+                    const ratio = maxMove / distance;
+                    moveX = joyX * ratio;
+                    moveY = joyY * ratio;
+                }
+
+                joystick.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                
+                // Tính toán vị trí của người chơi dựa trên joystick
+                movePlayer(playerX + moveX * 0.2, playerY + moveY * 0.2);
+            }
+        }
+
+        function joystickTouchEnd(event) {
+            event.preventDefault();
+            joystickPressed = false;
+            resetJoystick();
+            joystick.style.transform = `translate(0, 0)`;
+        }
+
+        function movePlayer(x, y) {
+            const boundingRect = gameContainer.getBoundingClientRect();
+            // Giới hạn vị trí của người chơi trong vùng chơi game
+            playerX = Math.max(0, Math.min(x, boundingRect.width - player.offsetWidth));
+            playerY = Math.max(0, Math.min(y, boundingRect.height - player.offsetHeight));
+            updatePlayerPosition();
+        }
+
+        function updatePlayerPosition() {
+            player.style.left = `${playerX}px`;
+            player.style.top = `${playerY}px`;
+        }
+
+        function usePow() {
+            const bullet = document.createElement('div');
+            bullet.classList.add('bullet');
+            bullet.style.left = `${playerX + player.offsetWidth / 3.7}px`; // Xuất phát từ điểm thấp hơn tầm giữa nhân vật
+            bullet.style.top = `${playerY + player.offsetHeight / 2}px`; // Điều chỉnh vị trí để viên đạn xuất phát từ điểm thấp hơn
+            document.body.appendChild(bullet);
+
+            let angle = 0;
+            const radius = 12; // Bán kính vòng xoáy
+            const speed = 15; // Tăng tốc độ di chuyển của viên đạn
+
+            const bulletInterval = setInterval(() => {
+                const bulletTop = parseFloat(bullet.style.top);
+                const bulletLeft = parseFloat(bullet.style.left);
+                
+                if (bulletTop > 0) {
+                    angle += 0.2; // Tăng góc để tạo vòng xoáy nhanh hơn
+                    bullet.style.top = `${bulletTop - speed}px`; // Di chuyển viên đạn lên nhanh hơn
+                    bullet.style.left = `${bulletLeft + radius * Math.cos(angle)}px`; // Di chuyển viên đạn theo trục X
+
+                    // Kiểm tra va chạm giữa đạn và kẻ địch
+                    checkBulletCollision(bullet);
+                } else {
+                    clearInterval(bulletInterval);
+                    document.body.removeChild(bullet);
+                }
+            }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
+        }
+
+        function resetJoystick() {
+            joystick.style.transform = `translate(0, 0)`;
+        }
+
+        function createEnemy() {
+            const enemy = document.createElement('div');
+            enemy.classList.add('enemy');
+            enemy.style.left = `${Math.random() * (gameContainer.offsetWidth - 50)}px`; // Vị trí ngẫu nhiên trong vùng chơi game
+            enemy.style.top = '0px';
+            gameContainer.appendChild(enemy);
+            enemies.push(enemy);
+
+            // Di chuyển kẻ địch xuống
+            const enemyInterval = setInterval(() => {
+                const enemyTop = parseFloat(enemy.style.top);
+                if (enemyTop < gameContainer.offsetHeight) {
+                    enemy.style.top = `${enemyTop + 3}px`; // Tốc độ di chuyển của kẻ địch
+                    checkCollision(enemy);
+                } else {
+                    clearInterval(enemyInterval);
+                    gameContainer.removeChild(enemy);
+                    const index = enemies.indexOf(enemy);
+                    if (index > -1) {
+                        enemies.splice(index, 1);
+                    }
+                }
+            }, 16);
+        }
+
+        function checkCollision(enemy) {
+            const enemyRect = enemy.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
+
+            if (enemyRect.left < playerRect.right &&
+                enemyRect.right > playerRect.left &&
+                enemyRect.top < playerRect.bottom &&
+                enemyRect.bottom > playerRect.top) {
+                // Kẻ địch va chạm với người chơi
+                loseLife();
+                gameContainer.removeChild(enemy);
+                const index = enemies.indexOf(enemy);
+                if (index > -1) {
+                    enemies.splice(index, 1);
+                }
+            }
+        }
+
+        function checkBulletCollision(bullet) {
+            const bulletRect = bullet.getBoundingClientRect();
+
+            enemies.forEach((enemy, index) => {
+                const enemyRect = enemy.getBoundingClientRect();
+
+                if (bulletRect.left < enemyRect.right &&
+                    bulletRect.right > enemyRect.left &&
+                    bulletRect.top < enemyRect.bottom &&
+                    bulletRect.bottom > enemyRect.top) {
+                    // Kẻ địch bị bắn trúng
+                    enemy.classList.add('hit');
+                    setTimeout(() => {
+                        gameContainer.removeChild(enemy);
+                        const enemyIndex = enemies.indexOf(enemy);
+                        if (enemyIndex > -1) {
+                            enemies.splice(enemyIndex, 1);
+                        }
+                    }, 500); // Delay để hiển thị hiệu ứng nhòe trắng
+
+                    document.body.removeChild(bullet);
+                }
+            });
+        }
+
+        function loseLife() {
+            lives -= 1;
+            document.getElementById('livesCount').innerText = lives;
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            clearInterval(enemyInterval);
+            alert('GAME OVER!'); // Hiển thị thông báo kết thúc game
+            location.reload(); // Tải lại trang để chơi lại
+        }
+    </script>
+</body>
+</html>
