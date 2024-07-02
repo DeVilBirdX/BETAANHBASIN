@@ -6,6 +6,7 @@
     <title>Hành Trình Anh Ba Sỉn</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        /* CSS như trước */
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -61,7 +62,7 @@
             height: 100%;
             display: none;
             position: relative;
-            background: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/5608af50711db1dd1ad12fe0ad993e3f.webp?alt=media&token=bb97a692-1cec-4333-90fa-28479dfb00d6') no-repeat center center fixed;
+            background: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/ahegao-5%20(1)%20(1).gif?alt=media&token=20647fbf-c89e-4a79-b5ad-f2532c8c89fb') no-repeat center center fixed;
             background-size: cover;
         }
         #player {
@@ -146,6 +147,15 @@
             color: white;
             z-index: 10000;
         }
+        #scoreContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: white;
+            z-index: 10000;
+        }
     </style>
 </head>
 <body>
@@ -159,249 +169,265 @@
         <div id="joystick">⚪</div>
         <div id="powButton" onclick="usePow()" class="hide">POW</div>
         <div id="livesContainer">❤ x <span id="livesCount">5</span></div>
+        <div id="scoreContainer">COM🍚 <span id="scoreCount">0</span></div>
     </div>
 
     <audio id="backgroundMusic" loop>
         <source src="https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/YouCut_20240702_100948379.mp3?alt=media&token=ed807c72-4a5e-427b-a313-8faef75fbdc9" type="audio/mpeg">
     </audio>
+    <audio id="shootSound">
+        <source src="https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/%C4%82NBAT%C3%94C%C6%A0M.mp3?alt=media&token=c8f5cfee-0815-4ec6-8efe-54b3c0d4ae95" type="audio/mpeg">
+    </audio>
+    <audio id="hitSound">
+        <source src="https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/RenSound.mp3?alt=media&token=4fd58c17-58a2-4431-9728-c3d0fd3fe3a3" type="audio/mpeg">
+    </audio>
 
     <script>
         let player, joystick, powButton;
-        let playerX = 0, playerY = 0;
-        let joystickPressed = false;
-        let lives = 5; // Số mạng sống ban đầu
-        let gameContainer;
-        const enemies = [];
-        let enemyInterval;
+let playerX = 0, playerY = 0;
+let joystickPressed = false;
+let lives = 5; // Số mạng sống ban đầu
+let gameContainer;
+const enemies = [];
+let enemyInterval;
+let score = 0; // Điểm số ban đầu
 
-        async function lockOrientation() {
-            try {
-                await screen.orientation.lock('portrait');
-            } catch (error) {
-                console.log('Orientation lock failed: ', error);
-            }
+async function lockOrientation() {
+    try {
+        await screen.orientation.lock('portrait');
+    } catch (error) {
+        console.log('Orientation lock failed: ', error);
+    }
+}
+
+async function requestFullscreen() {
+    try {
+        if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
+            await document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            await document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
+            await document.documentElement.msRequestFullscreen();
         }
+    } catch (error) {
+        console.log('Request fullscreen failed: ', error);
+    }
+}
 
-        async function requestFullscreen() {
-            try {
-                if (document.documentElement.requestFullscreen) {
-                    await document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
-                    await document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-                    await document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
-                    await document.documentElement.msRequestFullscreen();
-                }
-            } catch (error) {
-                console.log('Request fullscreen failed: ', error);
-            }
-        }
+function startGame() {
+    requestFullscreen(); // Yêu cầu vào chế độ toàn màn hình
+    const startScreen = document.querySelector('.start-screen');
+    gameContainer = document.getElementById('gameContainer');
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'block';
+    
+    // Bắt đầu nhạc nền
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    backgroundMusic.play();
 
-        function startGame() {
-            requestFullscreen(); // Yêu cầu vào chế độ toàn màn hình
-            const startScreen = document.querySelector('.start-screen');
-            gameContainer = document.getElementById('gameContainer');
-            startScreen.style.display = 'none';
-            gameContainer.style.display = 'block';
-            
-            // Bắt đầu nhạc nền
-            const backgroundMusic = document.getElementById('backgroundMusic');
-            backgroundMusic.play();
+    // Lấy các phần tử game
+    player = document.getElementById('player');
+    joystick = document.getElementById('joystick');
+    powButton = document.getElementById('powButton');
 
-            // Lấy các phần tử game
-            player = document.getElementById('player');
-            joystick = document.getElementById('joystick');
-            powButton = document.getElementById('powButton');
+    // Thiết lập sự kiện di chuyển joystick
+    joystick.addEventListener('touchstart', joystickTouchStart);
+    joystick.addEventListener('touchmove', joystickTouchMove);
+    joystick.addEventListener('touchend', joystickTouchEnd);
 
-            // Thiết lập sự kiện di chuyển joystick
-            joystick.addEventListener('touchstart', joystickTouchStart);
-            joystick.addEventListener('touchmove', joystickTouchMove);
-            joystick.addEventListener('touchend', joystickTouchEnd);
+    // Thiết lập sự kiện cho nút POW
+    powButton.addEventListener('click', usePow);
 
-            // Thiết lập sự kiện cho nút POW
-            powButton.addEventListener('click', usePow);
+    // Thiết lập vị trí ban đầu của người chơi
+    playerX = window.innerWidth / 2 - player.offsetWidth / 2;
+    playerY = window.innerHeight / 2 - player.offsetHeight / 2;
+    updatePlayerPosition();
 
-            // Thiết lập vị trí ban đầu của người chơi
-            playerX = window.innerWidth / 2 - player.offsetWidth / 2;
-            playerY = window.innerHeight / 2 - player.offsetHeight / 2;
-            updatePlayerPosition();
+    // Tạo kẻ địch ngẫu nhiên
+    enemyInterval = setInterval(createEnemy, 1500); // Tạo kẻ địch mới mỗi 1.5 giây
+}
 
-            // Tạo kẻ địch ngẫu nhiên
-            enemyInterval = setInterval(createEnemy, 2000); // Tạo kẻ địch mới mỗi 2 giây
-        }
+// Bắt đầu game khi tài liệu được tải hoàn thành
+document.addEventListener('DOMContentLoaded', () => {
+    lockOrientation();
+});
 
-        // Bắt đầu game khi tài liệu được tải hoàn thành
-        document.addEventListener('DOMContentLoaded', () => {
-            lockOrientation();
-        });
+function joystickTouchStart(event) {
+    event.preventDefault();
+    joystickPressed = true;
+}
+
+function joystickTouchMove(event) {
+    event.preventDefault();
+    if (joystickPressed) {
+        const touch = event.targetTouches[0];
+        const joyX = touch.pageX - joystick.offsetLeft - joystick.offsetWidth / 2;
+        const joyY = touch.pageY - joystick.offsetTop - joystick.offsetHeight / 2;
+
+        const maxMove = joystick.offsetWidth / 2;
+        const distance = Math.sqrt(joyX * joyX + joyY * joyY);
         
-        function joystickTouchStart(event) {
-            event.preventDefault();
-            joystickPressed = true;
+        let moveX, moveY;
+        if (distance < maxMove) {
+            moveX = joyX;
+            moveY = joyY;
+        } else {
+            const ratio = maxMove / distance;
+            moveX = joyX * ratio;
+            moveY = joyY * ratio;
         }
 
-        function joystickTouchMove(event) {
-            event.preventDefault();
-            if (joystickPressed) {
-                const touch = event.targetTouches[0];
-                const joyX = touch.pageX - joystick.offsetLeft - joystick.offsetWidth / 2;
-                const joyY = touch.pageY - joystick.offsetTop - joystick.offsetHeight / 2;
+        joystick.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        
+        // Tính toán vị trí của người chơi dựa trên joystick
+        movePlayer(playerX + moveX * 0.2, playerY + moveY * 0.2);
+    }
+}
 
-                const maxMove = joystick.offsetWidth / 2;
-                const distance = Math.sqrt(joyX * joyX + joyY * joyY);
-                
-                let moveX, moveY;
-                if (distance < maxMove) {
-                    moveX = joyX;
-                    moveY = joyY;
-                } else {
-                    const ratio = maxMove / distance;
-                    moveX = joyX * ratio;
-                    moveY = joyY * ratio;
-                }
+function joystickTouchEnd(event) {
+    event.preventDefault();
+    joystickPressed = false;
+    resetJoystick();
+    joystick.style.transform = `translate(0, 0)`;
+}
 
-                joystick.style.transform = `translate(${moveX}px, ${moveY}px)`;
-                
-                // Tính toán vị trí của người chơi dựa trên joystick
-                movePlayer(playerX + moveX * 0.2, playerY + moveY * 0.2);
-            }
+function movePlayer(x, y) {
+    const boundingRect = gameContainer.getBoundingClientRect();
+    // Giới hạn vị trí của người chơi trong vùng chơi game
+    playerX = Math.max(0, Math.min(x, boundingRect.width - player.offsetWidth));
+    playerY = Math.max(0, Math.min(y, boundingRect.height - player.offsetHeight));
+    updatePlayerPosition();
+}
+
+function updatePlayerPosition() {
+    player.style.left = `${playerX}px`;
+    player.style.top = `${playerY}px`;
+}
+
+function usePow() {
+    const bullet = document.createElement('div');
+    bullet.classList.add('bullet');
+    bullet.style.left = `${playerX + player.offsetWidth / 3.7}px`; // Xuất phát từ điểm thấp hơn tầm giữa nhân vật
+    bullet.style.top = `${playerY + player.offsetHeight / 2}px`; // Điều chỉnh vị trí để viên đạn xuất phát từ điểm thấp hơn
+    document.body.appendChild(bullet);
+
+    let angle = 0;
+    const radius = 12; // Bán kính vòng xoáy
+    const speed = 15; // Tăng tốc độ di chuyển của viên đạn
+
+    // Phát âm thanh khi bắn đạn
+    const shootSound = document.getElementById('shootSound');
+    shootSound.play();
+
+    const bulletInterval = setInterval(() => {
+        const bulletTop = parseFloat(bullet.style.top);
+        const bulletLeft = parseFloat(bullet.style.left);
+        
+        if (bulletTop > 0) {
+            angle += 0.2; // Tăng góc để tạo vòng xoáy nhanh hơn
+            bullet.style.top = `${bulletTop - speed}px`; // Di chuyển viên đạn lên nhanh hơn
+            bullet.style.left = `${bulletLeft + radius * Math.cos(angle)}px`; // Di chuyển viên đạn theo trục X
+
+            // Kiểm tra va chạm giữa đạn và kẻ địch
+            checkBulletCollision(bullet);
+        } else {
+            clearInterval(bulletInterval);
+            document.body.removeChild(bullet);
         }
+    }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
+}
 
-        function joystickTouchEnd(event) {
-            event.preventDefault();
-            joystickPressed = false;
-            resetJoystick();
-            joystick.style.transform = `translate(0, 0)`;
-        }
+function resetJoystick() {
+    joystick.style.transform = `translate(0, 0)`;
+}
 
-        function movePlayer(x, y) {
-            const boundingRect = gameContainer.getBoundingClientRect();
-            // Giới hạn vị trí của người chơi trong vùng chơi game
-            playerX = Math.max(0, Math.min(x, boundingRect.width - player.offsetWidth));
-            playerY = Math.max(0, Math.min(y, boundingRect.height - player.offsetHeight));
-            updatePlayerPosition();
-        }
+function createEnemy() {
+    const enemy = document.createElement('div');
+    enemy.classList.add('enemy');
+    enemy.style.left = `${Math.random() * (gameContainer.offsetWidth - 50)}px`; // Vị trí ngẫu nhiên trong vùng chơi game
+    enemy.style.top = '0px';
+    gameContainer.appendChild(enemy);
+    enemies.push(enemy);
 
-        function updatePlayerPosition() {
-            player.style.left = `${playerX}px`;
-            player.style.top = `${playerY}px`;
-        }
-
-        function usePow() {
-            const bullet = document.createElement('div');
-            bullet.classList.add('bullet');
-            bullet.style.left = `${playerX + player.offsetWidth / 3.7}px`; // Xuất phát từ điểm thấp hơn tầm giữa nhân vật
-            bullet.style.top = `${playerY + player.offsetHeight / 2}px`; // Điều chỉnh vị trí để viên đạn xuất phát từ điểm thấp hơn
-            document.body.appendChild(bullet);
-
-            let angle = 0;
-            const radius = 12; // Bán kính vòng xoáy
-            const speed = 15; // Tăng tốc độ di chuyển của viên đạn
-
-            const bulletInterval = setInterval(() => {
-                const bulletTop = parseFloat(bullet.style.top);
-                const bulletLeft = parseFloat(bullet.style.left);
-                
-                if (bulletTop > 0) {
-                    angle += 0.2; // Tăng góc để tạo vòng xoáy nhanh hơn
-                    bullet.style.top = `${bulletTop - speed}px`; // Di chuyển viên đạn lên nhanh hơn
-                    bullet.style.left = `${bulletLeft + radius * Math.cos(angle)}px`; // Di chuyển viên đạn theo trục X
-
-                    // Kiểm tra va chạm giữa đạn và kẻ địch
-                    checkBulletCollision(bullet);
-                } else {
-                    clearInterval(bulletInterval);
-                    document.body.removeChild(bullet);
-                }
-            }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
-        }
-
-        function resetJoystick() {
-            joystick.style.transform = `translate(0, 0)`;
-        }
-
-        function createEnemy() {
-            const enemy = document.createElement('div');
-            enemy.classList.add('enemy');
-            enemy.style.left = `${Math.random() * (gameContainer.offsetWidth - 50)}px`; // Vị trí ngẫu nhiên trong vùng chơi game
-            enemy.style.top = '0px';
-            gameContainer.appendChild(enemy);
-            enemies.push(enemy);
-
-            // Di chuyển kẻ địch xuống
-            const enemyInterval = setInterval(() => {
-                const enemyTop = parseFloat(enemy.style.top);
-                if (enemyTop < gameContainer.offsetHeight) {
-                    enemy.style.top = `${enemyTop + 3}px`; // Tốc độ di chuyển của kẻ địch
-                    checkCollision(enemy);
-                } else {
-                    clearInterval(enemyInterval);
-                    gameContainer.removeChild(enemy);
-                    const index = enemies.indexOf(enemy);
-                    if (index > -1) {
-                        enemies.splice(index, 1);
-                    }
-                }
-            }, 16);
-        }
-
-        function checkCollision(enemy) {
-            const enemyRect = enemy.getBoundingClientRect();
-            const playerRect = player.getBoundingClientRect();
-
-            if (enemyRect.left < playerRect.right &&
-                enemyRect.right > playerRect.left &&
-                enemyRect.top < playerRect.bottom &&
-                enemyRect.bottom > playerRect.top) {
-                // Kẻ địch va chạm với người chơi
-                loseLife();
-                gameContainer.removeChild(enemy);
-                const index = enemies.indexOf(enemy);
-                if (index > -1) {
-                    enemies.splice(index, 1);
-                }
-            }
-        }
-
-        function checkBulletCollision(bullet) {
-            const bulletRect = bullet.getBoundingClientRect();
-
-            enemies.forEach((enemy, index) => {
-                const enemyRect = enemy.getBoundingClientRect();
-
-                if (bulletRect.left < enemyRect.right &&
-                    bulletRect.right > enemyRect.left &&
-                    bulletRect.top < enemyRect.bottom &&
-                    bulletRect.bottom > enemyRect.top) {
-                    // Kẻ địch bị bắn trúng
-                    enemy.classList.add('hit');
-                    setTimeout(() => {
-                        gameContainer.removeChild(enemy);
-                        const enemyIndex = enemies.indexOf(enemy);
-                        if (enemyIndex > -1) {
-                            enemies.splice(enemyIndex, 1);
-                        }
-                    }, 500); // Delay để hiển thị hiệu ứng nhòe trắng
-
-                    document.body.removeChild(bullet);
-                }
-            });
-        }
-
-        function loseLife() {
-            lives -= 1;
-            document.getElementById('livesCount').innerText = lives;
-            if (lives <= 0) {
-                endGame();
-            }
-        }
-
-        function endGame() {
+    // Di chuyển kẻ địch xuống
+    const enemyInterval = setInterval(() => {
+        const enemyTop = parseFloat(enemy.style.top);
+        if (enemyTop < gameContainer.offsetHeight) {
+            enemy.style.top = `${enemyTop + 3}px`; // Tốc độ di chuyển của kẻ địch
+            checkCollision(enemy);
+        } else {
             clearInterval(enemyInterval);
-            alert('GAME OVER!'); // Hiển thị thông báo kết thúc game
-            location.reload(); // Tải lại trang để chơi lại
+            gameContainer.removeChild(enemy);
+            }
+    }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
+}
+
+function checkBulletCollision(bullet) {
+    const bulletRect = bullet.getBoundingClientRect();
+
+    enemies.forEach((enemy, index) => {
+        const enemyRect = enemy.getBoundingClientRect();
+
+        if (
+            bulletRect.left < enemyRect.left + enemyRect.width &&
+            bulletRect.left + bulletRect.width > enemyRect.left &&
+            bulletRect.top < enemyRect.top + enemyRect.height &&
+            bulletRect.top + bulletRect.height > enemyRect.top
+        ) {
+            // Remove bullet from screen
+            bullet.remove();
+
+            // Increase score
+            score += 2;
+            document.getElementById('scoreCount').innerText = score;
+
+            // Play hit sound
+            const hitSound = document.getElementById('hitSound');
+            hitSound.play();
+
+            // Remove enemy from screen
+            gameContainer.removeChild(enemy);
+            enemies.splice(index, 1);
         }
-    </script>
+    });
+}
+
+function checkCollision(enemy) {
+    const playerRect = player.getBoundingClientRect();
+    const enemyRect = enemy.getBoundingClientRect();
+    
+    if (
+        playerRect.left < enemyRect.left + enemyRect.width &&
+        playerRect.left + playerRect.width > enemyRect.left &&
+        playerRect.top < enemyRect.top + enemyRect.height &&
+        playerRect.top + playerRect.height > enemyRect.top
+    ) {
+        // Xóa kẻ địch khỏi màn hình và giảm mạng sống
+        gameContainer.removeChild(enemy);
+        enemies.splice(enemies.indexOf(enemy), 1);
+
+        lives--;
+        document.getElementById('livesCount').innerText = lives;
+
+        // Kiểm tra nếu người chơi hết mạng sống
+        if (lives <= 0) {
+            gameOver();
+        }
+    }
+}
+
+function gameOver() {
+    clearInterval(enemyInterval); // Dừng tạo kẻ địch mới
+    alert('Game Over! Your score: ' + score);
+    location.reload(); // Tải lại trang để chơi lại
+}
+
+// Khởi động lại trò chơi
+function restartGame() {
+    location.reload();
+}
+</script>
 </body>
 </html>
