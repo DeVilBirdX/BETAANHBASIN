@@ -375,10 +375,10 @@ function checkBulletCollision(bullet) {
 
         // Check if the bullet and enemy intersect
         if (
-            bulletRect.left < enemyRect.left + enemyRect.width &&
-            bulletRect.left + bulletRect.width > enemyRect.left &&
-            bulletRect.top < enemyRect.top + enemyRect.height &&
-            bulletRect.top + bulletRect.height > enemyRect.top
+            bulletRect.left < enemyRect.right &&
+            bulletRect.right > enemyRect.left &&
+            bulletRect.top < enemyRect.bottom &&
+            bulletRect.bottom > enemyRect.top
         ) {
             // If there's a collision, handle it
             bullet.remove(); // Remove the bullet from the DOM
@@ -407,10 +407,10 @@ function checkCollision(enemy) {
     const enemyRect = enemy.getBoundingClientRect();
     
     if (
-        playerRect.left < enemyRect.left + enemyRect.width &&
-        playerRect.left + playerRect.width > enemyRect.left &&
-        playerRect.top < enemyRect.top + enemyRect.height &&
-        playerRect.top + playerRect.height > enemyRect.top
+        playerRect.left < enemyRect.right &&
+        playerRect.right > enemyRect.left &&
+        playerRect.top < enemyRect.bottom &&
+        playerRect.bottom > enemyRect.top
     ) {
         gameContainer.removeChild(enemy);
         enemies.splice(enemies.indexOf(enemy), 1);
