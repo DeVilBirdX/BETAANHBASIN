@@ -373,26 +373,29 @@ function checkBulletCollision(bullet) {
     enemies.forEach((enemy, index) => {
         const enemyRect = enemy.getBoundingClientRect();
 
+        // Check if the bullet and enemy intersect
         if (
             bulletRect.left < enemyRect.left + enemyRect.width &&
             bulletRect.left + bulletRect.width > enemyRect.left &&
             bulletRect.top < enemyRect.top + enemyRect.height &&
             bulletRect.top + bulletRect.height > enemyRect.top
         ) {
-            bullet.remove();
-            score += 2;
-            document.getElementById('scoreCount').innerText = score;
+            // If there's a collision, handle it
+            bullet.remove(); // Remove the bullet from the DOM
+            score += 2; // Increase the score
+            document.getElementById('scoreCount').innerText = score; // Update the score display
 
             const hitSound = document.getElementById('hitSound');
-            hitSound.play();
+            hitSound.play(); // Play the hit sound effect
 
-            enemy.classList.add('hit');
+            enemy.classList.add('hit'); // Add a CSS class for visual feedback
 
+            // Remove the enemy after the transition (if needed)
             enemy.addEventListener('transitionend', function() {
-                enemy.classList.remove('hit');
+                enemy.classList.remove('hit'); // Remove the visual hit effect
                 if (gameContainer.contains(enemy)) {
-                    gameContainer.removeChild(enemy);
-                    enemies.splice(index, 1);
+                    gameContainer.removeChild(enemy); // Remove the enemy from the DOM
+                    enemies.splice(index, 1); // Remove the enemy from the array
                 }
             });
         }
