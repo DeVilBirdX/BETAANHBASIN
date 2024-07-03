@@ -156,7 +156,7 @@
     z-index: 1;
         }
 .enemy.hit {
-    animation: blink 0.9s ease-out; /* Thay đổi thời gian của animation thành 0.9 giây */
+    animation: blink 1s ease-out; /* Thay đổi thời gian của animation thành 1 giây */
 }
 
 @keyframes blink {
@@ -165,7 +165,7 @@
         background-image: url('NhopNhapTinhTrúng.png'); 
     }
     50% {
-        opacity: 0;
+        opacity: 0.05;
     }
 }
     </style>
@@ -414,7 +414,7 @@ function checkBulletCollision(bullet) {
             // Remove hit class after animation completes
             setTimeout(() => {
                 enemy.classList.remove('hit');
-            }, 900); // Thời gian 0.9 giây
+            }, 1000); // Thời gian 1 giây
         }
     });
 }
