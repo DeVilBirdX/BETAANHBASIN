@@ -451,6 +451,32 @@ function gameOver() {
 function restartGame() {
     location.reload();
 }
+
+document.addEventListener("keydown", function(event) {
+            if (event.key === "ArrowUp") {
+                moveUp();
+            } else if (event.key === "ArrowLeft") {
+                moveLeft();
+            } else if (event.key === "ArrowRight") {
+                moveRight();
+            } else if (event.key === "ArrowDown") {
+                moveDown();
+            } else if (event.key === " ") { // Space bar
+                shoot();
+            }
+        });
+
+        document.addEventListener("keyup", function(event) {
+            if (
+                event.key === "ArrowUp" ||
+                event.key === "ArrowLeft" ||
+                event.key === "ArrowRight" ||
+                event.key === "ArrowDown"
+            ) {
+                stopMove();
+            }
+        });
+
 </script>
 </body>
 </html>
