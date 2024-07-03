@@ -118,27 +118,15 @@
         .bullet {
             width: 13px;
             height: 11px;
-            background-color: white;
-            position: absolute;
+            background-color: ivory;
+            position: absolute; /* Thêm dòng này */
             border-radius: 50%;
+            z-index: 999;
+            transition: none;
         }
         .hide {
             display: none;
-        }
-        .enemy {
-            width: 65px;
-            height: 85px;
-            background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240702_223422916.png?alt=media&token=72d5263a-c701-43b7-af5e-5e3f7e6bf47a'); /* Thêm hình ảnh cho kẻ địch */
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: absolute;
-        }
-        .enemy.hit {
-            background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240703_011704342.png?alt=media&token=004f614d-2c1d-42e1-9ef6-b8e42d5438c6'); /* Đường dẫn tới hình ảnh slime */
-            background-size: cover;
-            transition: all 0.5s ease;
-        }
+        }      
         #livesContainer {
             position: absolute;
             top: 10px;
@@ -157,6 +145,29 @@
             color: white;
             z-index: 10000;
         }
+        .enemy {
+    width: 65px;
+    height: 85px;
+    background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240702_223422916.png?alt=media&token=72d5263a-c701-43b7-af5e-5e3f7e6bf47a');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: absolute;
+    z-index: 1;
+        }
+.enemy.hit {
+    animation: blink 0.9s ease-out; /* Thay đổi thời gian của animation thành 0.9 giây */
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+        background-image: url('NhopNhapTinhTrúng.png'); 
+    }
+    50% {
+        opacity: 0;
+    }
+}
     </style>
 </head>
 <body>
@@ -353,6 +364,7 @@ function createEnemy() {
     enemies.push(enemy);
 
     function moveEnemy() {
+        const enemyRect = enemy.getBoundingClientRect(); // Thêm dòng này
         const enemyTop = parseFloat(enemy.style.top);
         if (enemyTop < gameContainer.offsetHeight) {
             enemy.style.top = `${enemyTop + 3}px`;
@@ -373,31 +385,36 @@ function checkBulletCollision(bullet) {
     enemies.forEach((enemy, index) => {
         const enemyRect = enemy.getBoundingClientRect();
 
-        // Check if the bullet and enemy intersect
         if (
-            bulletRect.left < enemyRect.right &&
-            bulletRect.right > enemyRect.left &&
-            bulletRect.top < enemyRect.bottom &&
-            bulletRect.bottom > enemyRect.top
+            bulletRect.left < enemyRect.left + enemyRect.width &&
+            bulletRect.left + bulletRect.width > enemyRect.left &&
+            bulletRect.top < enemyRect.top + enemyRect.height &&
+            bulletRect.top + bulletRect.height > enemyRect.top
         ) {
-            // If there's a collision, handle it
-            bullet.remove(); // Remove the bullet from the DOM
-            score += 2; // Increase the score
-            document.getElementById('scoreCount').innerText = score; // Update the score display
+            // Remove bullet from screen
+            bullet.remove();
 
+            // Increase score
+            score += 2;
+            document.getElementById('scoreCount').innerText = score;
+
+            // Play hit sound
             const hitSound = document.getElementById('hitSound');
-            hitSound.play(); // Play the hit sound effect
+            hitSound.play();
 
-            enemy.classList.add('hit'); // Add a CSS class for visual feedback
+            // Remove enemy from screen after a short delay
+            setTimeout(() => {
+                gameContainer.removeChild(enemy);
+                enemies.splice(index, 1);
+            }, 100);
 
-            // Remove the enemy after the transition (if needed)
-            enemy.addEventListener('transitionend', function() {
-                enemy.classList.remove('hit'); // Remove the visual hit effect
-                if (gameContainer.contains(enemy)) {
-                    gameContainer.removeChild(enemy); // Remove the enemy from the DOM
-                    enemies.splice(index, 1); // Remove the enemy from the array
-                }
-            });
+            // Apply hit animation
+            enemy.classList.add('hit');
+
+            // Remove hit class after animation completes
+            setTimeout(() => {
+                enemy.classList.remove('hit');
+            }, 900); // Thời gian 0.9 giây
         }
     });
 }
@@ -426,7 +443,7 @@ function checkCollision(enemy) {
 
 function gameOver() {
     clearInterval(enemyInterval); // Dừng tạo kẻ địch mới
-    alert('GAME OVER! ANH BA CUM IN: ' + score);
+    alert('GAME OVER! ANH BA CŲM IN: ' + score);
     location.reload(); // Tải lại trang để chơi lại
 }
 
