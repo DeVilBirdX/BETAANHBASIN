@@ -135,7 +135,8 @@
             position: absolute;
         }
         .enemy.hit {
-            background-color: rgba(255, 255, 255, 0.5);
+            background-image: url('https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/Polish_20240703_011704342.png?alt=media&token=004f614d-2c1d-42e1-9ef6-b8e42d5438c6'); /* Đường dẫn tới hình ảnh slime */
+            background-size: cover;
             transition: all 0.5s ease;
         }
         #livesContainer {
@@ -309,34 +310,34 @@ function updatePlayerPosition() {
 function usePow() {
     const bullet = document.createElement('div');
     bullet.classList.add('bullet');
-    bullet.style.left = `${playerX + player.offsetWidth / 3.7}px`; // Xuất phát từ điểm thấp hơn tầm giữa nhân vật
-    bullet.style.top = `${playerY + player.offsetHeight / 2}px`; // Điều chỉnh vị trí để viên đạn xuất phát từ điểm thấp hơn
+    bullet.style.left = `${playerX + player.offsetWidth / 3.7}px`;
+    bullet.style.top = `${playerY + player.offsetHeight / 2}px`;
     document.body.appendChild(bullet);
 
     let angle = 0;
-    const radius = 12; // Bán kính vòng xoáy
-    const speed = 15; // Tăng tốc độ di chuyển của viên đạn
+    const radius = 12;
+    const speed = 15;
 
-    // Phát âm thanh khi bắn đạn
     const shootSound = document.getElementById('shootSound');
     shootSound.play();
 
-    const bulletInterval = setInterval(() => {
+    function moveBullet() {
         const bulletTop = parseFloat(bullet.style.top);
         const bulletLeft = parseFloat(bullet.style.left);
-        
-        if (bulletTop > 0) {
-            angle += 0.2; // Tăng góc để tạo vòng xoáy nhanh hơn
-            bullet.style.top = `${bulletTop - speed}px`; // Di chuyển viên đạn lên nhanh hơn
-            bullet.style.left = `${bulletLeft + radius * Math.cos(angle)}px`; // Di chuyển viên đạn theo trục X
 
-            // Kiểm tra va chạm giữa đạn và kẻ địch
+        if (bulletTop > 0) {
+            angle += 0.2;
+            bullet.style.top = `${bulletTop - speed}px`;
+            bullet.style.left = `${bulletLeft + radius * Math.cos(angle)}px`;
+
             checkBulletCollision(bullet);
+            requestAnimationFrame(moveBullet);
         } else {
-            clearInterval(bulletInterval);
             document.body.removeChild(bullet);
         }
-    }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
+    }
+
+    moveBullet();
 }
 
 function resetJoystick() {
@@ -346,22 +347,24 @@ function resetJoystick() {
 function createEnemy() {
     const enemy = document.createElement('div');
     enemy.classList.add('enemy');
-    enemy.style.left = `${Math.random() * (gameContainer.offsetWidth - 50)}px`; // Vị trí ngẫu nhiên trong vùng chơi game
+    enemy.style.left = `${Math.random() * (gameContainer.offsetWidth - 50)}px`;
     enemy.style.top = '0px';
     gameContainer.appendChild(enemy);
     enemies.push(enemy);
 
-    // Di chuyển kẻ địch xuống
-    const enemyInterval = setInterval(() => {
+    function moveEnemy() {
         const enemyTop = parseFloat(enemy.style.top);
         if (enemyTop < gameContainer.offsetHeight) {
-            enemy.style.top = `${enemyTop + 3}px`; // Tốc độ di chuyển của kẻ địch
+            enemy.style.top = `${enemyTop + 3}px`;
             checkCollision(enemy);
+            requestAnimationFrame(moveEnemy);
         } else {
-            clearInterval(enemyInterval);
             gameContainer.removeChild(enemy);
-            }
-    }, 16); // 60 frames per second (1000ms / 60 ≈ 16.67ms)
+            enemies.splice(enemies.indexOf(enemy), 1);
+        }
+    }
+
+    moveEnemy();
 }
 
 function checkBulletCollision(bullet) {
@@ -376,20 +379,22 @@ function checkBulletCollision(bullet) {
             bulletRect.top < enemyRect.top + enemyRect.height &&
             bulletRect.top + bulletRect.height > enemyRect.top
         ) {
-            // Remove bullet from screen
             bullet.remove();
-
-            // Increase score
             score += 2;
             document.getElementById('scoreCount').innerText = score;
 
-            // Play hit sound
             const hitSound = document.getElementById('hitSound');
             hitSound.play();
 
-            // Remove enemy from screen
-            gameContainer.removeChild(enemy);
-            enemies.splice(index, 1);
+            enemy.classList.add('hit');
+
+            enemy.addEventListener('transitionend', function() {
+                enemy.classList.remove('hit');
+                if (gameContainer.contains(enemy)) {
+                    gameContainer.removeChild(enemy);
+                    enemies.splice(index, 1);
+                }
+            });
         }
     });
 }
@@ -404,14 +409,12 @@ function checkCollision(enemy) {
         playerRect.top < enemyRect.top + enemyRect.height &&
         playerRect.top + playerRect.height > enemyRect.top
     ) {
-        // Xóa kẻ địch khỏi màn hình và giảm mạng sống
         gameContainer.removeChild(enemy);
         enemies.splice(enemies.indexOf(enemy), 1);
 
         lives--;
         document.getElementById('livesCount').innerText = lives;
 
-        // Kiểm tra nếu người chơi hết mạng sống
         if (lives <= 0) {
             gameOver();
         }
@@ -420,7 +423,7 @@ function checkCollision(enemy) {
 
 function gameOver() {
     clearInterval(enemyInterval); // Dừng tạo kẻ địch mới
-    alert('Game Over! Your score: ' + score);
+    alert('GAME OVER! ANH BA CUM IN: ' + score);
     location.reload(); // Tải lại trang để chơi lại
 }
 
