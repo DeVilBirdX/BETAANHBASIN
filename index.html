@@ -249,7 +249,7 @@ function startGame() {
     updatePlayerPosition();
 
     // Tạo kẻ địch ngẫu nhiên
-    enemyInterval = setInterval(createEnemy, 1500); // Tạo kẻ địch mới mỗi 1.5 giây
+    enemyInterval = setInterval(createEnemy, 900); // Tạo kẻ địch mới mỗi 0.9 giây
 }
 
 // Bắt đầu game khi tài liệu được tải hoàn thành
@@ -358,7 +358,7 @@ function createEnemy() {
     const enemyInterval = setInterval(() => {
         const enemyTop = parseFloat(enemy.style.top);
         if (enemyTop < gameContainer.offsetHeight) {
-            enemy.style.top = `${enemyTop + 3}px`; // Tốc độ di chuyển của kẻ địch
+            enemy.style.top = `${enemyTop + 4}px`; // Tốc độ di chuyển của kẻ địch
             checkCollision(enemy);
         } else {
             clearInterval(enemyInterval);
@@ -462,7 +462,7 @@ function checkCollision(enemy) {
 
 function gameOver() {
     clearInterval(enemyInterval); // Dừng tạo kẻ địch mới
-    alert('GAME OVER! ANH BA CŲM IN: ' + score);
+    alert('GAME OVER! ANH BA CUM IN: ' + score);
     location.reload(); // Tải lại trang để chơi lại
 }
 
