@@ -26,7 +26,7 @@
         }
         h1 {
             position: absolute;
-            top: 30px;
+            top: 70px;
             left: 50%;
             transform: translateX(-50%);
             font-family: 'Orbitron', sans-serif;
@@ -43,7 +43,7 @@
         }
         #startButton {
             padding: 20px 25px;
-            font-size: 25px;
+            font-size: 30px;
             cursor: pointer;
             font-family: 'Press Start 2P', cursive;
             background-color: #4CAF50;
@@ -113,7 +113,7 @@
             user-select: none;
         }
         #powButton:hover {
-            background-color: #0ff0fd;
+            background-color: #FF00FF;
         }
         .bullet {
     width: 20px;
@@ -147,7 +147,7 @@
             left: 10px;
             font-family: 'Press Start 2P', cursive;
             font-size: 20px;
-            color: white;
+            color: #C0FF3E;
             z-index: 10000;
         }
         #scoreContainer {
@@ -156,13 +156,88 @@
             right: 10px;
             font-family: 'Press Start 2P', cursive;
             font-size: 20px;
-            color: white;
+            color: #ADFF2F;
             z-index: 10000;
+        }
+        .game-over-screen {
+        display: none; /* Ban đầu ẩn đi */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: green;
+        color: gold;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 24px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        z-index: 10001; 
+        }
+        .game-over-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        }
+        #restartButton {
+        padding: 15px 20px;
+        font-size: 20px;
+        cursor: pointer;
+        font-family: 'Press Start 2P', cursive;
+        background-color: yellow;
+        color: red;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+        }
+        #restartButton:hover {
+        background-color: orange;
+        }
+        #howToPlayButton {
+        position: absolute;
+        top: 10px;
+        right: 170px;
+        background-color: lime;
+        color: red;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 40px;
+        z-index: 10001;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        }
+        #howToPlayButton:hover {
+        background-color: cyan;
+        }
+        .notification {
+        display: none;
+        position: absolute;
+        top: 80px;
+        right: 10px;
+        background-color: yellow;
+        color: red;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 20px;
+        z-index: 10001;
+        max-width: 300px;
+        text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="start-screen">
+<div id="howToPlayButton" onclick="toggleNotification()">?</div>
+<div class="notification" id="notification">
+    Trên Điện Thoại Dùng Nút Di Chuyển Để Di Chuyển Nhân Vật Và Nút Pow Để Bắn Đạn Trong Trò Chơi
+    Trên Máy Tính Dùng Nút WASD Hoặc Nút Up Down Left Right Để Di Chuyển, Dùng Nút Space Bar Hoặc Click Chuột Để Bắn Pow Trong Trò Chơi 
+    CHÚC MAY MẮN ANH BA SỈN CU TO
+</div>
         <h1>HÀNH TRÌNH ANH BA SỈN</h1>
         <button id="startButton" onclick="startGame()">START</button>
     </div>
@@ -174,6 +249,13 @@
         <div id="livesContainer">❤ x <span id="livesCount">6</span></div>
         <div id="scoreContainer">COM🍚 <span id="scoreCount">0</span></div>
     </div>
+<div class="game-over-screen" id="gameOverScreen">
+    <div class="game-over-content">
+        <div id="gameOverText">GAME OVER</div>
+        <div id="finalScore"></div>
+        <button id="restartButton" onclick="restartGame()">CHOI LAI</button>
+    </div>
+</div>
 
     <audio id="backgroundMusic" loop>
         <source src="https://firebasestorage.googleapis.com/v0/b/nhachay-43b11.appspot.com/o/YouCut_20240702_100948379.mp3?alt=media&token=ed807c72-4a5e-427b-a313-8faef75fbdc9" type="audio/mpeg">
@@ -249,7 +331,7 @@ function startGame() {
     updatePlayerPosition();
 
     // Tạo kẻ địch ngẫu nhiên
-    enemyInterval = setInterval(createEnemy, 900); // Tạo kẻ địch mới mỗi 0.9 giây
+    enemyInterval = setInterval(createEnemy, 800); // Tạo kẻ địch mới mỗi 0.8 giây
 }
 
 // Bắt đầu game khi tài liệu được tải hoàn thành
@@ -462,14 +544,52 @@ function checkCollision(enemy) {
 
 function gameOver() {
     clearInterval(enemyInterval); // Dừng tạo kẻ địch mới
-    alert('GAME OVER! ANH BA CUM IN: ' + score);
-    location.reload(); // Tải lại trang để chơi lại
+    document.getElementById('finalScore').innerText = `ANH BA CUM IN: ${score}`;
+    document.getElementById('gameOverScreen').style.display = 'flex';
+}
+
+function restartGame() {
+    location.reload();
 }
 
 // Khởi động lại trò chơi
 function restartGame() {
     location.reload();
 }
+
+document.addEventListener('keydown', function(event) {
+    switch (event.key) {
+        case 'w':
+        case 'ArrowUp':
+            movePlayer(playerX, playerY - 10);
+            break;
+        case 'a':
+        case 'ArrowLeft':
+            movePlayer(playerX - 10, playerY);
+            break;
+        case 's':
+        case 'ArrowDown':
+            movePlayer(playerX, playerY + 10);
+            break;
+        case 'd':
+        case 'ArrowRight':
+            movePlayer(playerX + 10, playerY);
+            break;
+        case ' ':
+            usePow();
+            break;
+    }
+});
+
+function toggleNotification() {
+    const notification = document.getElementById('notification');
+    if (notification.style.display === 'none' || notification.style.display === '') {
+        notification.style.display = 'block';
+    } else {
+        notification.style.display = 'none';
+    }
+}
+
 </script>
 </body>
 </html>
